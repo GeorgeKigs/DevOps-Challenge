@@ -1,0 +1,4 @@
+*/*.pub
+*.terraform.*
+*.terraform
+*/env

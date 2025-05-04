@@ -8,4 +8,4 @@ services:
     frontend:
          image: 992122884453.dkr.ecr.us-east-1.amazonaws.com/validator-frontend
          ports:
-            - 8081:8081
+            - 8081:8081 
