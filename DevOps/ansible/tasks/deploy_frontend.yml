@@ -1,0 +1,56 @@
+- name: Harden SSH Configuration
+  become: yes
+  block:
+    - name: Ensure Docker is installed
+      apt:
+        name: docker.io
+        state: present
+      become: yes
+
+    - name: Ensure AWS CLI is installed
+      apt:
+        name: awscli
+        state: present
+      become: yes
+
+    - name: Create application directory
+      file:
+        path: /opt/docker-app
+        state: directory
+        mode: '0755'
+
+    - name: Upload .env file
+      template:
+        src: .env.j2
+        dest: /opt/docker-app/.env
+        mode: '0600'
+
+    - name: Authenticate with AWS ECR
+      shell: |
+        aws ecr get-login-password --region {{ ecr_region }} | docker login --username AWS --password-stdin {{ ecr_repo }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
+      args:
+        executable: /bin/bash
+
+    - name: Pull Docker image from ECR
+      docker_image:
+        name: "{{ ecr_repo }}"
+        tag: "{{ image_tag }}"
+        source: pull
+
+    - name: Stop and remove any existing container
+      docker_container:
+        name: spring-app
+        state: absent
+        force_kill: true
+
+    - name: Run the container
+      docker_container:
+        name: spring-app
+        image: "{{ ecr_repo }}:{{ image_tag }}"
+        env_file: /opt/docker-app/.env
+        ports:
+          - "{{ container_port }}:8080"
+        restart_policy: always

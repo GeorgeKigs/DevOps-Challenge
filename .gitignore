@@ -6,3 +6,5 @@ env/
 *.tfvars
 *.backup
 terraform_db.sh
+.env
+creds.sh

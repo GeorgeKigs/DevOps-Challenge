@@ -30,18 +30,18 @@
   tasks:
     - include_tasks: tasks/configure_firewall.yml
 
-# - name: Deploy Backend
-#   hosts: backend
-#   become: yes
-#   vars_files:
-#     - vars.yml
-#   tasks:
-#     - include_tasks: tasks/configure_nginx.yml
+- name: Deploy Backend
+  hosts: backend
+  become: yes
+  vars_files:
+    - vars.yml
+  tasks:
+    - include_tasks: tasks/deploy_backend.yml
 
-# - name: Deploy Frontend
-#   hosts: frontend
-#   become: yes
-#   vars_files:
-#     - vars.yml
-#   tasks:
-#     - include_tasks: tasks/configure_nginx.yml
+- name: Deploy Frontend
+  hosts: frontend
+  become: yes
+  vars_files:
+    - vars.yml
+  tasks:
+    - include_tasks: tasks/deploy_frontend.yml
