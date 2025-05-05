@@ -162,8 +162,8 @@ resource "aws_vpc_security_group_egress_rule" "this" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ssh_protocol" {
-  from_port   = 22
-  to_port     = 22
+  from_port   = 1337
+  to_port     = 1337
   ip_protocol = "6"
   cidr_ipv4   = "0.0.0.0/0"
   # referenced_security_group_id = aws_security_group.this.id
