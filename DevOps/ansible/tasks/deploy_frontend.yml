@@ -1,11 +1,6 @@
-- name: Harden SSH Configuration
+- name: Deploy the Java application.
   become: yes
   block:
-    - name: Ensure Docker is installed
-      apt:
-        name: docker.io
-        state: present
-      become: yes
 
     - name: Ensure AWS CLI is installed
       apt:
@@ -15,19 +10,19 @@
 
     - name: Create application directory
       file:
-        path: /opt/docker-app
+        path: /home/ubuntu/ansible/docker-app
         state: directory
         mode: '0755'
 
     - name: Upload .env file
-      template:
-        src: .env.j2
-        dest: /opt/docker-app/.env
+      copy:
+        src: /home/ubuntu/ansible/templates/.env
+        dest: /home/ubuntu/ansible/docker-app/.env
         mode: '0600'
 
     - name: Authenticate with AWS ECR
       shell: |
-        aws ecr get-login-password --region {{ ecr_region }} | docker login --username AWS --password-stdin {{ ecr_repo }}
+        aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 992122884453.dkr.ecr.eu-central-1.amazonaws.com
       environment:
         AWS_ACCESS_KEY_ID: "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
         AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
@@ -36,21 +31,22 @@
 
     - name: Pull Docker image from ECR
       docker_image:
-        name: "{{ ecr_repo }}"
-        tag: "{{ image_tag }}"
+        name: "{{ item }}"
+        tag: "latest"
         source: pull
+      loop: "{{ ecr_uris }}"
 
     - name: Stop and remove any existing container
       docker_container:
-        name: spring-app
+        name: "{{ item }}"
         state: absent
         force_kill: true
+      loop: "{{ docker_containers }}"
 
-    - name: Run the container
+    - name: Run the frontend container
       docker_container:
-        name: spring-app
-        image: "{{ ecr_repo }}:{{ image_tag }}"
-        env_file: /opt/docker-app/.env
+        name: validator-frontend-image
+        image: "{{ ecr_uris[1] }}:latest"
         ports:
-          - "{{ container_port }}:8080"
+          - "8081:8081"
         restart_policy: always

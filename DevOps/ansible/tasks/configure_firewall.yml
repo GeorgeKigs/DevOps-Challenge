@@ -18,37 +18,15 @@
     direction: outgoing
     policy: allow
 
-- name: Allow SSH (port 22) from anywhere
+- name: Allow the TCP ports listed below
   ufw:
     rule: allow
-    port: 22
+    port: "{{ item }}"
     proto: tcp
+  loop: "{{ allowed_ports }}"
 
-- name: Allow SSH (port 22) from anywhere
-  ufw:
-    rule: allow
-    port: 1337
-    proto: tcp
 
-- name: Allow HTTP (port 80)
-  ufw:
-    rule: allow
-    port: 80
-    proto: tcp
-
-- name: Allow HTTPS (port 443)
-  ufw:
-    rule: allow
-    port: 443
-    proto: tcp
-
-- name: Allow PostgreSQL (port 5432)
-  ufw:
-    rule: allow
-    port: 5432
-    proto: tcp
-
-- name: Allow Frontend port (8080) from specific IPs
+- name: Allow Frontend port from specific IPs
   ufw:
     rule: allow
     port: 8080
@@ -56,7 +34,7 @@
     from_ip: "{{ item }}"
   loop: "{{ allowed_ips }}"
 
-- name: Allow Backend port (8081) from specific IPs
+- name: Allow Backend portfrom specific IPs
   ufw:
     rule: allow
     port: 8081
@@ -98,12 +76,6 @@
         regexp: '^#?PasswordAuthentication\s+.*'
         line: 'PasswordAuthentication no'
         state: present
-
-    - name: Ensure firewall allows new SSH port (1337)
-      ufw:
-        rule: allow
-        port: 1337
-        proto: tcp
 
     - name: Restart SSH service
       service:

@@ -30,7 +30,7 @@
   tasks:
     - include_tasks: tasks/configure_firewall.yml
 
-- name: Deploy Backend
+- name: Deploy Application
   hosts: backend
   become: yes
   vars_files:
@@ -38,7 +38,8 @@
   tasks:
     - include_tasks: tasks/deploy_backend.yml
 
-- name: Deploy Frontend
+
+- name: Deploy Application
   hosts: frontend
   become: yes
   vars_files:

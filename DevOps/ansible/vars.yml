@@ -1,8 +1,27 @@
+# global configs
 ansible_user: ubuntu
 ansible_port: 1337
 ansible_ssh_private_key_file: ~/.ssh/terraform_key
+# firewall configs
 allowed_ips: 
   - "172.31.150.10"
   - "172.31.150.11"
   - "72.31.149.4"
+allowed_ports:
+  - 1337
+  - 80
+  - 443
+  - 22
+  - 5432
+# ecr configs
+ecr_region: eu-central-1
+ecr_uris:
+  - 992122884453.dkr.ecr.eu-central-1.amazonaws.com/validator-backend-image
+  - 992122884453.dkr.ecr.eu-central-1.amazonaws.com/validator-frontend-image
+docker_containers:
+  - validator-backend-image
+  - validator-frontend-image
+
+
+
 
