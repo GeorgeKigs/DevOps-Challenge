@@ -1,0 +1,23 @@
+- name: Install Docker on all nodes
+  hosts: all
+  become: yes
+  vars_files:
+    - vars.yml
+  tasks:
+    - include_tasks: tasks/install_docker.yml
+
+- name: Install Jenkins on worker nodes
+  hosts: controller
+  become: yes
+  vars_files:
+    - vars.yml
+  tasks:
+    - include_tasks: tasks/install_jenkins.yml
+
+- name: Install and configure Nginx on controller
+  hosts: controller
+  become: yes
+  vars_files:
+    - vars.yml
+  tasks:
+    - include_tasks: tasks/configure_nginx.yml

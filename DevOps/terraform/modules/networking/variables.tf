@@ -35,6 +35,11 @@ variable "imported_igw_id" {
   default = null
 }
 
+variable "imported_nat_gw_id" {
+  type    = string
+  default = null
+}
+
 # variables for internet gateway
 variable "public_cidr_block" {
   type = list(string)

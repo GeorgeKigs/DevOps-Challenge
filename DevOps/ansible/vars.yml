@@ -1,0 +1,6 @@
+ansible_user: ubuntu
+ansible_ssh_private_key_file: ~/.ssh/terraform_key
+
+# jenkins_ports:
+#   - 8080
+#   - 8081

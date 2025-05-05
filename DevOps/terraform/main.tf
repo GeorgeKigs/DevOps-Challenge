@@ -38,7 +38,7 @@ module "networking" {
 
 module "misc" {
   source   = "./modules/misc"
-  key_name = "key_pair.pub"
+  key_name = "/home/george/.ssh/terraform_key.pub"
 }
 
 module "database" {
@@ -64,7 +64,7 @@ module "public_node" {
   os_details       = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
   os_details_owner = "099720109477"
   subnet_id        = module.networking.public_subnet_id.0
-  ec2_count            = 1
+  ec2_count        = 1
   private_ip       = ["172.31.149.4"]
   instance_type    = "t3.medium"
   disk_size        = 150
@@ -82,7 +82,7 @@ module "private_node" {
   os_details       = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
   os_details_owner = "099720109477"
   subnet_id        = module.networking.private_subnet_id.0
-  ec2_count            = 2
+  ec2_count        = 2
   private_ip       = ["172.31.150.10", "172.31.150.11"]
   instance_type    = "t3.medium"
   disk_size        = 150
