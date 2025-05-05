@@ -31,34 +31,6 @@ resource "aws_internet_gateway" "this" {
   )
 }
 
-# resource "aws_internet_gateway_attachment" "this" {
-#   count = var.create_igw || var.create_vpc ? 1 : 0
-
-#   vpc_id              = local.vpc_id
-#   internet_gateway_id = local.gw_id
-# }
-
-
-
-# resource "aws_eip" "this" {
-#   tags = merge({
-#     Name = "${var.region}-${var.project}-NAT-eip"
-#     },
-#     var.tags
-#   )
-# }
-
-# resource "aws_nat_gateway" "this" {
-#   count             = var.create_nat_gw ? 1 : 0
-#   allocation_id     = aws_eip.this.id
-#   subnet_id         = element(aws_subnet.public.*.id, 0)
-#   connectivity_type = "public"
-#   tags = merge({
-#     Name = "${var.region}-${var.project}-nat-gw"
-#     },
-#     var.tags
-#   )
-# }
 
 # gateway route table
 resource "aws_route_table" "gw_rt" {
@@ -76,20 +48,6 @@ resource "aws_route_table" "gw_rt" {
   )
 }
 
-# nat route table
-# resource "aws_route_table" "nat_rt" {
-#   vpc_id = local.vpc_id
-
-#   route {
-#     cidr_block     = "0.0.0.0/0"
-#     nat_gateway_id = aws_nat_gateway.this[0].id
-#   }
-#   tags = merge({
-#     Name = "${var.region}-${var.project}-nat-rt"
-#     },
-#     var.tags
-#   )
-# }
 
 # availabilty zone subnets
 resource "aws_subnet" "private" {
@@ -107,12 +65,6 @@ resource "aws_subnet" "private" {
   )
 }
 
-# resource "aws_route_table_association" "private" {
-#   count = length(var.private_cidr_block)
-
-#   route_table_id = aws_route_table.nat_rt.id
-#   subnet_id      = element(aws_subnet.private.*.id, count.index)
-# }
 
 resource "aws_subnet" "public" {
   count = length(var.public_cidr_block)
@@ -137,7 +89,7 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_security_group" "this" {
-  name        = "${var.region}-${var.project}-sg"
+  name        = "${var.region}-main-sg"
   description = "Describes the security group to be used"
   vpc_id      = local.vpc_id
 
@@ -151,15 +103,83 @@ resource "aws_security_group" "this" {
 resource "aws_vpc_security_group_egress_rule" "this" {
   from_port         = 0
   to_port           = 0
-  ip_protocol       = "TCP"
+  ip_protocol       = -1
   cidr_ipv4         = "0.0.0.0/0"
   security_group_id = aws_security_group.this.id
 }
 
-resource "aws_vpc_security_group_ingress_rule" "this" {
+resource "aws_vpc_security_group_ingress_rule" "ssh_protocol" {
+  from_port                    = 0
+  to_port                      = 22
+  ip_protocol                  = "6"
+  cidr_ipv4                    = "0.0.0.0/0"
+  # referenced_security_group_id = aws_security_group.this.id
+  security_group_id            = aws_security_group.this.id
+}
+
+# secuurity group for load balancer
+resource "aws_security_group" "load_balancer" {
+  name        = "${var.region}-load_balancer-sg"
+  description = "Describes the security group to be used"
+  vpc_id      = local.vpc_id
+
+  tags = merge({
+    Name = "${var.region}-load_balancer-sg"
+    },
+    var.tags
+  )
+}
+
+resource "aws_vpc_security_group_ingress_rule" "load_balancer_protocol" {
+  cidr_ipv4                    = var.cidr_block_sg_lb
+  from_port                    = 0
+  to_port                      = 80
+  ip_protocol                  = -1
+  # referenced_security_group_id = aws_security_group.this.id
+  security_group_id            = aws_security_group.load_balancer.id
+}
+
+# security group for database balancer
+resource "aws_security_group" "database" {
+  name        = "${var.region}-database-sg"
+  description = "Describes the security group to be used"
+  vpc_id      = local.vpc_id
+
+  tags = merge({
+    Name = "${var.region}-database-sg"
+    },
+    var.tags
+  )
+}
+
+resource "aws_vpc_security_group_ingress_rule" "database_protocol" {
+  cidr_ipv4                    = var.cidr_block_sg_db
+  from_port                    = 0
+  to_port                      = 0
+  ip_protocol                  = "6"
+  # referenced_security_group_id = aws_security_group.this.id
+  security_group_id            = aws_security_group.database.id
+}
+
+
+# security group for microservice balancer
+resource "aws_security_group" "microservice" {
+  name        = "${var.region}-micro-sg"
+  description = "Describes the security group to be used"
+  vpc_id      = local.vpc_id
+
+  tags = merge({
+    Name = "${var.region}-micro-sg"
+    },
+    var.tags
+  )
+}
+
+resource "aws_vpc_security_group_ingress_rule" "microservice_protocol" {
+  cidr_ipv4                    = var.cidr_block_sg_microservice
   from_port                    = 0
   to_port                      = 0
   ip_protocol                  = -1
-  referenced_security_group_id = aws_security_group.this.id
+  # referenced_security_group_id = aws_security_group.this.id
   security_group_id            = aws_security_group.this.id
 }

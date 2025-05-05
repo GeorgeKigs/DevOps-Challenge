@@ -36,7 +36,7 @@ variable "key_name" {
 }
 
 variable "security_group" {
-  type = string
+  type = list(string)
 }
 
 variable "tags" {

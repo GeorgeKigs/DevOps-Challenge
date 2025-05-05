@@ -35,7 +35,7 @@ resource "aws_instance" "int-instance" {
   key_name = aws_key_pair.int-ec2-key-pair.id
 
   # Networking
-  security_groups = [var.security_group]
+  security_groups = var.security_group
   subnet_id       = var.subnet_id
 
   # disk size

@@ -43,3 +43,16 @@ variable "public_cidr_block" {
 variable "private_cidr_block" {
   type = list(string)
 }
+
+# variables for security groups
+variable "cidr_block_sg_lb" {
+  type = string
+}
+
+variable "cidr_block_sg_db" {
+  type = string
+}
+
+variable "cidr_block_sg_microservice" {
+  type = string
+}

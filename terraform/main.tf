@@ -1,6 +1,6 @@
 locals {
-  region  = "us-east-1"
-  project = ""
+  region  = "eu-central-1"
+  project = "challenge"
   tags = {
     "Environment"   = "sandbox"
     "Owner"         = "gndungu"
@@ -14,51 +14,80 @@ locals {
 module "networking" {
   source = "./modules/networking"
   # create critical resources
-  create_igw    = true
-  create_nat_gw = true
-  create_vpc    = true
-
-  cidr_block         = "172.31.0.0/16"
-  public_cidr_block  = ["172.31.149.0/24"]
-  private_cidr_block = ["172.31.150.0/24", "172.31.151.0/24"] # data plane and internal network.
-
-  region  = local.region
-  project = local.project
-  tags    = local.tags
+  create_igw                 = true
+  create_vpc                 = true
+  cidr_block                 = "172.31.0.0/16"
+  public_cidr_block          = ["172.31.149.0/24"]
+  private_cidr_block         = ["172.31.150.0/24", "172.31.151.0/24","172.31.152.0/24"] # data plane and internal network.
+  cidr_block_sg_lb           = "172.31.149.0/24"
+  cidr_block_sg_db           = "172.31.151.0/24"
+  cidr_block_sg_microservice = "172.31.150.0/24"
+  region                     = local.region
+  project                    = local.project
+  tags                       = local.tags
 }
 
+# outputs:
+# vpc_id
+# internet_gateway_id
+# public_subnet_id
+# private_subnet_id
+# security_group_id
 
-module "Server_nodes" {
+module "database" {
+  source = "./modules/rds"
+  # create critical resources
+
+  region                 = local.region
+  project                = local.project
+  tags                   = local.tags
+  name                   = "jumia_phone_validator"
+  instance_class         = "db.t3.micro"
+  username               = "jumia"
+  password               = var.password
+  vpc_security_group_ids = [module.networking.main_security_group_id, module.networking.db_security_group_id]
+  subnet_ids             = [module.networking.private_subnet_id.1, module.networking.private_subnet_id.2]
+  disk_size              = 10
+
+}
+
+module "public_node" {
   source = "./modules/ec2"
   # create critical resources
-  os_details = ""
-  os_details_owner = ""
-  subnet_id = ""
-
-  instance_type = ""
-
-  disk_size = 150
-  key_name = "data.pub"
-  security_group = ""
+  os_details       = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
+  os_details_owner = "099720109477"
+  subnet_id        = module.networking.public_subnet_id.0
+  count            = 1
+  instance_type    = "t3.medium"
+  disk_size        = 150
+  key_name         = "data.pub"
+  security_group   = [module.networking.main_security_group_id, module.networking.lb_security_group_id]
 
   region  = local.region
   project = local.project
   tags    = local.tags
 }
 
-# module "cloud9" {
-#   source        = "./modules/misc"
-#   tags          = local.tags
-#   region        = local.region
-#   project       = local.project
+module "private_node" {
+  source = "./modules/ec2"
+  # create critical resources
+  os_details       = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
+  os_details_owner = "099720109477"
+  subnet_id        = module.networking.private_subnet_id.0
+  count            = 2
+  instance_type    = "t3.medium"
+  disk_size        = 150
+  key_name         = "data.pub"
+  security_group   = [module.networking.main_security_group_id, module.networking.micro_security_group_id]
 
-#   # cloud9 variables
-#   subnet_id     = module.networking.public_subnet_id[0]
-#   instance_type = "t3.medium"
+  region  = local.region
+  project = local.project
+  tags    = local.tags
+}
 
-#   # ecr variables
-#   scan_on_push = false
-# }
+
+
+
 
 # module "eks_cluster" {
 #   source = "./modules/eks_cluster"
