@@ -4,41 +4,20 @@
     state: present
     update_cache: yes
 
-- name: Configure Nginx load balancing
-  copy:
-    dest: /etc/nginx/sites-available/jenkins
-    content: |
-      upstream jenkins_cluster {
-          server {{ hostvars['worker1']['ansible_host'] }}:8080;
-          server {{ hostvars['worker2']['ansible_host'] }}:8081;
-      }
+- name: Restart Nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
 
-      server {
-          listen 80;
-
-          location / {
-              proxy_pass http://jenkins_cluster;
-              proxy_set_header Host $host;
-              proxy_set_header X-Real-IP $remote_addr;
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              proxy_set_header X-Forwarded-Proto $scheme;
-          }
-      }
-
-- name: Enable Jenkins site
-  file:
-    src: /etc/nginx/sites-available/jenkins
-    dest: /etc/nginx/sites-enabled/jenkins
-    state: link
-    force: yes
+- name: Configure Nginx reverse proxy
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/sites-available/default
+  notify: Restart nginx
 
 - name: Remove default Nginx site
   file:
     path: /etc/nginx/sites-enabled/default
     state: absent
 
-- name: Restart Nginx
-  systemd:
-    name: nginx
-    state: restarted
-    enabled: yes

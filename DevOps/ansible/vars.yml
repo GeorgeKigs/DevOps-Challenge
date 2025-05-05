@@ -1,6 +1,8 @@
 ansible_user: ubuntu
+ansible_port: 1337
 ansible_ssh_private_key_file: ~/.ssh/terraform_key
+allowed_ips: 
+  - "172.31.150.10"
+  - "172.31.150.11"
+  - "72.31.149.4"
 
-# jenkins_ports:
-#   - 8080
-#   - 8081

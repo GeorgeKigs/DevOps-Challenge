@@ -2,7 +2,6 @@
   apt:
     name: 
     -  openjdk-21-jre
-       fontconfig
     state: present
 
 - name: Add Jenkins GPG key
