@@ -25,8 +25,7 @@ resource "aws_db_instance" "this" {
   skip_final_snapshot = true
 
   tags = merge({
-    Name = "${var.region}-${var.project}-rds"
-    },
+    Name = "${var.region}-${var.project}-rds"},
     var.tags
   )
 }

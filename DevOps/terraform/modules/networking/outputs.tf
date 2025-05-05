@@ -24,6 +24,6 @@ output "main_security_group_id" {
   value = aws_security_group.this.id
 }
 
-output "microservice_security_group_id" {
+output "micro_security_group_id" {
   value = aws_security_group.microservice.id
 }

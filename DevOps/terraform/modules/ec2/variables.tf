@@ -19,11 +19,11 @@ variable "instance_type" {
   type = string
 }
 variable "ec2_count" {
-  type = number
+  type    = number
   default = 1
 }
 variable "disk_size" {
-  type = number
+  type    = number
   default = 150
 }
 
@@ -36,6 +36,10 @@ variable "key_name" {
 }
 
 variable "security_group" {
+  type = list(string)
+}
+
+variable "private_ip" {
   type = list(string)
 }
 

@@ -1,4 +1,8 @@
 */*.pub
 *.terraform.*
 *.terraform
-*/env
+env/
+*.tfstate
+*.tfvars
+*.backup
+terraform_db.sh

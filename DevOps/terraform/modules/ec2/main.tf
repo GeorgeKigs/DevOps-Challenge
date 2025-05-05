@@ -19,29 +19,29 @@ data "aws_ami" "int-ec2-instance" {
   }
 }
 
-resource "aws_key_pair" "int-ec2-key-pair" {
-  public_key = file(var.key_name)
-  key_name   = "public-key"
-}
 
 resource "aws_instance" "int-instance" {
   # machine type details
+  count = var.ec2_count 
   instance_type = var.instance_type
-  count         = var.ec2_count
-  tags          = var.tags
-
-  # image used
-  ami      = data.aws_ami.int-ec2-instance.id
-  key_name = aws_key_pair.int-ec2-key-pair.id
+  ami           = data.aws_ami.int-ec2-instance.id # image used
+  key_name      = var.key_name
 
   # Networking
   security_groups = var.security_group
   subnet_id       = var.subnet_id
-
-  # disk size
+  private_ip = var.private_ip[count.index]
+  # disk 
   root_block_device {
     volume_size           = var.disk_size
     delete_on_termination = true
     encrypted             = true
+  }
+  tags = merge({
+    Name = "${var.region}-${var.project}-rds" },
+  var.tags)
+
+  lifecycle {
+    ignore_changes = [ security_groups ]
   }
 }

@@ -98,6 +98,7 @@ resource "aws_security_group" "this" {
     },
     var.tags
   )
+  
 }
 
 resource "aws_vpc_security_group_egress_rule" "this" {
@@ -106,15 +107,19 @@ resource "aws_vpc_security_group_egress_rule" "this" {
   ip_protocol       = -1
   cidr_ipv4         = "0.0.0.0/0"
   security_group_id = aws_security_group.this.id
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ssh_protocol" {
-  from_port                    = 0
+  from_port                    = 22
   to_port                      = 22
   ip_protocol                  = "6"
   cidr_ipv4                    = "0.0.0.0/0"
   # referenced_security_group_id = aws_security_group.this.id
   security_group_id            = aws_security_group.this.id
+  
 }
 
 # secuurity group for load balancer
@@ -128,6 +133,7 @@ resource "aws_security_group" "load_balancer" {
     },
     var.tags
   )
+  
 }
 
 resource "aws_vpc_security_group_ingress_rule" "load_balancer_protocol" {
@@ -137,6 +143,10 @@ resource "aws_vpc_security_group_ingress_rule" "load_balancer_protocol" {
   ip_protocol                  = -1
   # referenced_security_group_id = aws_security_group.this.id
   security_group_id            = aws_security_group.load_balancer.id
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # security group for database balancer
@@ -150,6 +160,7 @@ resource "aws_security_group" "database" {
     },
     var.tags
   )
+  
 }
 
 resource "aws_vpc_security_group_ingress_rule" "database_protocol" {
@@ -159,6 +170,10 @@ resource "aws_vpc_security_group_ingress_rule" "database_protocol" {
   ip_protocol                  = "6"
   # referenced_security_group_id = aws_security_group.this.id
   security_group_id            = aws_security_group.database.id
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 
@@ -173,6 +188,8 @@ resource "aws_security_group" "microservice" {
     },
     var.tags
   )
+  
+  
 }
 
 resource "aws_vpc_security_group_ingress_rule" "microservice_protocol" {
@@ -182,4 +199,8 @@ resource "aws_vpc_security_group_ingress_rule" "microservice_protocol" {
   ip_protocol                  = -1
   # referenced_security_group_id = aws_security_group.this.id
   security_group_id            = aws_security_group.this.id
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
